@@ -20,7 +20,8 @@ Categorized by common operations like user management, filesystem handling, netw
     - [📄🔍 `grep` command (with `-E` and Extended Regex)](#-grep-command-with--e-and-extended-regex)
     - [🔍 `grep -E`: Extended Regular Expressions (ERE)](#-grep--e-extended-regular-expressions-ere)
     - [📄 Quick Extended Regex Guide](#-quick-extended-regex-guide)
-    - [`sed`](#sed)
+    - [📝 `sed`](#-sed)
+    - [awk](#awk)
   - [🌐 Networking](#-networking)
   - [📊 Process and System Monitoring](#-process-and-system-monitoring)
   - [🔒 Security and Permissions](#-security-and-permissions)
@@ -458,11 +459,104 @@ If you need backreferences, either:
 
 ---
 
-### `sed`
+### 📝 `sed`
+
+The `sed` command is a non-interactive *stream editor* used to filter and transform text in Unix-like systems. It reads input text **line by line** and allows editing operations (substitution, deletion, insertion, etc.) on each line without opening a text editor. By default, `sed` sends its results to standard output (your terminal) and **does not modify the original file** unless instructed. This makes `sed` ideal for automating text modifications in scripts or processing large files.
+
+---
+
+#### 🧩 Sed Command Cheat Sheet
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `s/old/new/` | Substitute first match per line | `sed 's/foo/bar/'` |
+| `s/old/new/g` | Substitute all matches | `sed 's/foo/bar/g'` |
+| `Nd` | Delete line N | `sed '5d'` |
+| `M,N d` | Delete range | `sed '10,15d'` |
+| `/pat/d` | Delete matching lines | `sed '/ERROR/d'` |
+| `Np` | Print only line N | `sed -n '5p'` |
+| `/pat/p` | Print matching lines | `sed -n '/error/p'` |
+| `i\text` | Insert text before line | `sed '3i\Hello'` |
+| `a\text` | Append text after line | `sed '/END/a\Goodbye'` |
+| `c\text` | Replace line(s) with text | `sed '5c\New line'` |
+| `y/set1/set2/` | Transform chars | `sed 'y/abc/ABC/'` |
+| `--debug/` | Debug info | `sed --debug 's/foo/bar/'` |
+
+---
+
+#### 🔍 Search and Replace Text
+
+Syntax:
+```bash
+sed 's/SEARCH/REPLACE/FLAGS' file
+```
+
+Examples:
+```bash
+sed 's/apple/orange/' groceries.txt         # replace first "apple" per line
+sed 's/apple/orange/g' groceries.txt       # replace all "apple" per line
+sed 's/apple/orange/gI' groceries.txt      # replace case-insensitive
+sed 's:/home/user:/mnt/backup:g' paths.txt # use different delimiter
+sed 's/[0-9][0-9]$/& years old/' file      # append text after 2-digit numbers
+```
+
+Special:
+- `&` = matched text (`sed 's/Linux/& OS/'` → "Linux OS")
+- ``, ``... = regex capture groups
+
+---
+
+#### 🗑️ Deleting Lines
+
+Examples:
+```bash
+sed '5d' file.txt        # delete line 5
+sed '$d' file.txt        # delete last line
+sed '10,15d' file.txt    # delete lines 10–15
+sed '/^#/d' config.txt   # delete lines starting with '#'
+sed '5d;10d' file.txt    # delete multiple specific lines
+```
+
+---
+
+#### ✏️ Editing Files In-Place
+
+By default, `sed` prints changes. To modify files directly, use `-i`:
+
+```bash
+sed -i 's/apple/orange/g' groceries.txt   # edit in-place
+sed -i.bak 's/apple/orange/' groceries.txt # edit with backup (groceries.txt.bak)
+```
+
+⚠️ Be careful! In-place edits overwrite files. Use backups or version control.
+
+---
+
+#### 📦 Buffers Used by `sed`
+
+- **Pattern Space**:  
+  - The current line `sed` is processing.  
+  - Reset every cycle (each new line).  
+  - All edits (`s`, `d`, `p`, etc.) work here.  
+  - Printed automatically unless `-n` is used.
+
+- **Hold Space**:  
+  - A secondary buffer for storage across cycles.  
+  - Not reset each line.  
+  - Commands:  
+    - `h` → copy pattern → hold  
+    - `H` → append pattern → hold  
+    - `g` → copy hold → pattern  
+    - `G` → append hold → pattern  
+    - `x` → swap pattern and hold  
+
+Think of **pattern space** as the "current line workspace" and **hold space** as a "clipboard".
+
+---
+
+### awk
 
 
-
-- awk
 
 ---
 
