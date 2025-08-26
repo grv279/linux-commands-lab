@@ -18,10 +18,9 @@ Categorized by common operations like user management, filesystem handling, netw
     - [🧭 `find` Command](#-find-command)
   - [🧰 Text Processing and Stream Editing](#-text-processing-and-stream-editing)
     - [📄🔍 `grep` command (with `-E` and Extended Regex)](#-grep-command-with--e-and-extended-regex)
-    - [🔍 `grep -E`: Extended Regular Expressions (ERE)](#-grep--e-extended-regular-expressions-ere)
     - [📄 Quick Extended Regex Guide](#-quick-extended-regex-guide)
     - [📝 `sed`](#-sed)
-    - [awk](#awk)
+    - [🔍📄✂️ awk](#️-awk)
   - [🌐 Networking](#-networking)
   - [📊 Process and System Monitoring](#-process-and-system-monitoring)
   - [🔒 Security and Permissions](#-security-and-permissions)
@@ -404,7 +403,7 @@ grep -F "literally this text" file.txt     # no regex, fastest
 
 ---
 
-###  🔍 `grep -E`: Extended Regular Expressions (ERE)
+####  🔍 `grep -E`: Extended Regular Expressions (ERE)
 
 `-E` enables **extended** regex (like `egrep`). You get `()`, `|`, `+`, `?`, and `{m,n}` without backslashes.
 
@@ -554,8 +553,105 @@ Think of **pattern space** as the "current line workspace" and **hold space** as
 
 ---
 
-### awk
+### 🔍📄✂️ awk
 
+**Introduction:** The AWK command is a powerful text-processing tool on
+Linux, perfect for extracting and analyzing data from files like CSVs,
+logs, and system outputs. It works by scanning each line of input and,
+for lines that match a given pattern, executing specified actions.
+Below, we present practical AWK examples for **text processing**, **data
+analysis**, and **system administration** tasks, complete with
+plain-language explanations. Finally, a cheat sheet summarizes common
+patterns, syntax, and one-liners for daily use.
+
+#### 🔍 AWK for Text Processing (Searching, Filtering, Formatting)
+
+-   **Filtering lines by text pattern:**
+
+    ``` bash
+    awk '/Failed login/ {print $1}' security.log
+    ```
+
+-   **Extracting specific columns from text:**
+
+    ``` bash
+    awk '{print $1}' access.log
+    ```
+
+-   **Reformatting and printing selected fields:**
+
+    ``` bash
+    awk -F: '{print $1 "=" $3}' /etc/passwd
+    ```
+
+#### 📊 AWK for Data Analysis (Summing Columns, Averages, CSV Processing)
+
+-   **Summing up column values in a CSV:**
+
+    ``` bash
+    awk -F, '{ sum += $3 } END { print sum }' sales.csv
+    ```
+
+-   **Conditional summing:**
+
+    ``` bash
+    awk -F, '$2 == "Product123" { total += $3 * $4 } END { print "Total Sales for Product123:", total }' sales.log
+    ```
+
+-   **Calculating an average:**
+
+    ``` bash
+    awk -F, '{ total += $3; count++ } END { print "Average Memory Usage:", total/count }' system.log
+    ```
+
+-   **Grouping and aggregating by category:**
+
+    ``` bash
+    awk -F, '{ total[$1] += $3 * $4 } END { for (cat in total) print cat, total[cat] }' inventory.csv
+    ```
+
+#### 🖥️ AWK for System Administration (Logs and System Reports)
+
+-   **Counting unique IPs in logs:**
+
+    ``` bash
+    awk '{print $1}' access.log | sort | uniq -c
+    ```
+
+-   **Extracting disk usage info:**
+
+    ``` bash
+    df -h | awk 'NR>1 { print $1, $5 }'
+    ```
+
+-   **Calculating memory usage:**
+
+    ``` bash
+    free -m | awk '/Mem:/ { total=$2 } /buffers\/cache/ { used=$3 } END { print (used/total)*100 "%" }'
+    ```
+
+------------------------------------------------------------------------
+
+#### ⚡ AWK Quick Reference Cheat Sheet
+
+-   **Basic syntax:** `pattern { action }`
+-   **Fields:** `$0` (whole line), `$1..$NF` (fields), `NF` (field
+    count), `NR` (record number)
+-   **Separators:** `FS` input (use `-F`), `OFS` output
+-   **Special blocks:** `BEGIN {}`, `END {}`
+-   **Regex match:** `~` and `!~`
+
+#### 📝 AWK Command Cheat Sheet
+
+| Task           | Command Example                                           |
+|----------------|-----------------------------------------------------------|
+| Print columns  | `awk '{print $2, $5}' file`                               |
+| Filter rows    | `awk '$3>100' file`                                       |
+| Regex search   | `awk '/ERROR/' file`                                      |
+| Sum values     | `awk '{s+=$1} END{print s}' file`                         |
+| Average values | `awk '{t+=$2;c++} END{print t/c}' file`                   |
+| Count unique   | `awk '{f[$1]++} END{for(i in f) print i,f[i]}' file`      |
+| Skip header    | `awk 'NR>1 {print}' file`                                 |
 
 
 ---
@@ -674,17 +770,36 @@ sudo dnf remove packagename                  # Remove a package
 ### 🗄️ `tar`
 
   ```bash
-  tar -czvf archive.tar.gz folder/    # Create a tar.gz archive
+  tar -czvf archive.tar.gz folder/    # Create(-compress-verbose-file) a tar.gz archive
 
-  tar -xzvf archive.tar.gz            # Extract a tar.gz file
+  tar -xzvf archive.tar.gz            # Extract(-decompress-verbose-file) a tar.gz file
+
+  mkdir -p /path/to/destination
+  tar -xzvf archive.tar.gz -C /path/to/destination/
+
   ```
 
 ### 📦 `zip`
 
   ```bash
-  zip archive.zip file1 file2         # Zip and unzip files
+  # Create a ZIP archive named "archive.zip" containing file1.txt and file2.txt
+  zip archive.zip file1.txt file2.txt
 
-  unzip archive.zip                   # unzip to current directory
+  # Create a ZIP archive from an entire folder (e.g., "project")
+  zip -r project.zip project/
+
+  # Extract "archive.zip" into the current directory
+  unzip archive.zip
+
+  # Extract "archive.zip" into a specific directory called "out_directory"
+  # (-d specifies the destination folder; it will be created if it doesn’t exist)
+  unzip archive.zip -d out_directory
+
+  # List the contents of a ZIP file without extracting
+  unzip -l archive.zip
+
+  # Quietly unzip without printing extracted file names
+  unzip -qq archive.zip -d out_directory
   ```
 
 ## 💡 Quick Rule
