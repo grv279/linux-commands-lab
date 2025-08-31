@@ -20,7 +20,9 @@ Categorized by common operations like user management, filesystem handling, netw
     - [📄🔍 `grep` command (with `-E` and Extended Regex)](#-grep-command-with--e-and-extended-regex)
     - [📄 Quick Extended Regex Guide](#-quick-extended-regex-guide)
     - [📝 `sed`](#-sed)
-    - [🔍📄✂️ awk](#️-awk)
+    - [🔍 awk](#-awk)
+    - [➕ paste](#-paste)
+    - [✂️ cut](#️-cut)
   - [🌐 Networking](#-networking)
   - [📊 Process and System Monitoring](#-process-and-system-monitoring)
   - [🔒 Security and Permissions](#-security-and-permissions)
@@ -470,6 +472,7 @@ The `sed` command is a non-interactive *stream editor* used to filter and transf
 |---------|-------------|---------|
 | `s/old/new/` | Substitute first match per line | `sed 's/foo/bar/'` |
 | `s/old/new/g` | Substitute all matches | `sed 's/foo/bar/g'` |
+| `s|old|new|g` | Use another delimiter (easier to read) | `echo 'D:\Users\path' \| sed 's|\\|/|g'` |
 | `Nd` | Delete line N | `sed '5d'` |
 | `M,N d` | Delete range | `sed '10,15d'` |
 | `/pat/d` | Delete matching lines | `sed '/ERROR/d'` |
@@ -553,16 +556,13 @@ Think of **pattern space** as the "current line workspace" and **hold space** as
 
 ---
 
-### 🔍📄✂️ awk
+### 🔍 awk
 
-**Introduction:** The AWK command is a powerful text-processing tool on
-Linux, perfect for extracting and analyzing data from files like CSVs,
-logs, and system outputs. It works by scanning each line of input and,
-for lines that match a given pattern, executing specified actions.
-Below, we present practical AWK examples for **text processing**, **data
-analysis**, and **system administration** tasks, complete with
-plain-language explanations. Finally, a cheat sheet summarizes common
-patterns, syntax, and one-liners for daily use.
+The AWK command is a powerful text-processing tool on Linux, perfect for 
+extracting and analyzing data from files like CSVs, logs, and system outputs. 
+It works by scanning each line of input and, for lines that match a given pattern,
+executing specified actions. Below, are the practical AWK examples 
+for **text processing**, **data analysis**, and **system administration** tasks.
 
 #### 🔍 AWK for Text Processing (Searching, Filtering, Formatting)
 
@@ -652,6 +652,190 @@ patterns, syntax, and one-liners for daily use.
 | Average values | `awk '{t+=$2;c++} END{print t/c}' file`                   |
 | Count unique   | `awk '{f[$1]++} END{for(i in f) print i,f[i]}' file`      |
 | Skip header    | `awk 'NR>1 {print}' file`                                 |
+
+
+---
+
+### ➕ paste
+
+
+The `paste` command merges lines of files side-by-side, separated by a delimiter.
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `paste file1 file2` | Merge files line by line with **TAB** as the default delimiter. | `paste names.txt ages.txt` |
+| `-d DELIM` | Specify a custom delimiter instead of TAB. | `paste -d "," file1 file2` |
+| `-s` | Serial mode: concatenate lines of one file at a time (instead of parallel merging). | `paste -s file1` |
+| `-d ""` | Suppress delimiters completely (concatenate directly). | `paste -d "" file1 file2` |
+| `- -` | Use **stdin** (standard input). | `echo -e "a\nb\nc" | paste - -` |
+| `-d ":,"` | Cycle through multiple delimiters (first `:`, then `,`, repeat). | `paste -d ":," file1 file2 file3` |
+| `paste <(cmd1) <(cmd2)` | Merge outputs of commands using **process substitution**. | `paste <(ls *.txt) <(wc -l *.txt)` |
+
+---
+
+#### Quick Examples
+
+```bash
+# Merge two files side by side with TAB
+paste file1.txt file2.txt
+
+# Merge with comma as delimiter
+paste -d "," file1.txt file2.txt
+
+# Merge one file serially (lines concatenated with TAB)
+paste -s file1.txt
+
+# Merge stdin (two columns)
+echo -e "1\n2\n3\n4" | paste - -    # Output: "1 2" / "3 4"
+
+```
+
+---
+
+### ✂️ cut
+
+The `cut` command is used to **extract specific parts of text**
+(columns, characters, or bytes) from each line of a file or input.
+
+Think of it as "cutting out" only the part you need.
+
+#### ⚡ Quick Reference
+
+| Command                                             | Task                        |
+|-----------------------------------------------------|-----------------------------|
+| `cut -c1-10 file`                                   | First 10 chars              |
+| `cut -c2,4 file`                                    | 2nd and 4th chars           |
+| `cut -d',' -f1 file`                                | Field 1 (comma-delimited)   |
+| `cut -f2-3 file`                                    | Fields 2--3 (tab-delimited) |
+| `cut -d',' -f1,2 --output-delimiter="|" file`       | Replace delimiter           |
+| `echo "abcdef" \| cut -c3-5`                        | From stdin                  |
+
+
+---
+
+#### 📌 Basic Syntax
+
+``` bash
+cut [options] [file...]
+```
+
+If no file is given, `cut` reads from **standard input** (keyboard,
+pipe, etc.).
+
+---
+
+#### 🔹 Options
+
+-   `-b LIST` → Select specific **bytes**
+-   `-c LIST` → Select specific **characters**
+-   `-f LIST` → Select specific **fields** (columns)
+-   `-d DELIM` → Specify a **delimiter** (default: TAB)
+-   `--complement` → Invert the selection
+-   `-s` → Skip lines that don't have the delimiter
+
+👉 **Use only one of `-b`, `-c`, or `-f` at a time.**
+
+---
+
+#### 🧪 Examples
+
+##### 1. Select characters
+
+``` bash
+echo "HelloWorld" | cut -c1-5
+```
+
+Output:
+
+    Hello
+
+👉 Extracts the **1st to 5th characters**.
+
+---
+
+#### 2. Select specific character positions
+
+``` bash
+echo "LinuxRocks" | cut -c1,3,5
+```
+
+Output:
+
+    Lnx
+
+👉 Extracts only 1st, 3rd, and 5th characters.
+
+---
+
+#### 3. Select fields (columns) using delimiter
+
+Suppose `data.txt`:
+
+    Alice,25,Doctor
+    Bob,30,Engineer
+    Charlie,35,Teacher
+
+Extract only **names** (1st field):
+
+``` bash
+cut -d',' -f1 data.txt
+```
+
+Output:
+
+    Alice
+    Bob
+    Charlie
+
+---
+
+#### 4. Extract multiple fields
+
+``` bash
+cut -d',' -f1,3 data.txt
+```
+
+Output:
+
+    Alice,Doctor
+    Bob,Engineer
+    Charlie,Teacher
+
+---
+
+#### 5. Change output delimiter
+
+``` bash
+cut -d',' -f1,2 --output-delimiter=" | " data.txt
+```
+
+Output:
+
+    Alice | 25
+    Bob | 30
+    Charlie | 35
+
+---
+
+#### 6. Use with pipes
+
+``` bash
+ls -l | cut -c1-10
+```
+
+👉 Shows only the **file permissions** column.
+
+---
+
+#### 7. Skip lines without delimiter (`-s`)
+
+If some lines don't have commas:
+
+``` bash
+cut -d',' -f2 -s file.txt
+```
+
+👉 Ignores lines without `,`.
 
 
 ---
